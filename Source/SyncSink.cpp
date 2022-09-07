@@ -21,39 +21,39 @@
 
 */
 
-#include "VisualizerPlugin.h"
+#include "SyncSink.h"
 
-#include "VisualizerPluginEditor.h"
+#include "SyncSinkEditor.h"
 
 
-VisualizerPlugin::VisualizerPlugin() 
-    : GenericProcessor("Visualizer Plugin")
+SyncSink::SyncSink() 
+    : GenericProcessor("SyncSink2")
 {
 
 }
 
 
-VisualizerPlugin::~VisualizerPlugin()
+SyncSink::~SyncSink()
 {
 
 }
 
 
-AudioProcessorEditor* VisualizerPlugin::createEditor()
+AudioProcessorEditor* SyncSink::createEditor()
 {
-    editor = std::make_unique<VisualizerPluginEditor>(this);
+    editor = std::make_unique<SyncSinkEditor>(this);
     return editor.get();
 }
 
 
-void VisualizerPlugin::updateSettings()
+void SyncSink::updateSettings()
 {
 
 
 }
 
 
-void VisualizerPlugin::process(AudioBuffer<float>& buffer)
+void SyncSink::process(AudioBuffer<float>& buffer)
 {
 
     checkForEvents(true);
@@ -61,31 +61,31 @@ void VisualizerPlugin::process(AudioBuffer<float>& buffer)
 }
 
 
-void VisualizerPlugin::handleTTLEvent(TTLEventPtr event)
+void SyncSink::handleTTLEvent(TTLEventPtr event)
 {
 
 }
 
 
-void VisualizerPlugin::handleSpike(SpikePtr event)
+void SyncSink::handleSpike(SpikePtr event)
 {
 
 }
 
 
-void VisualizerPlugin::handleBroadcastMessage(String message)
+void SyncSink::handleBroadcastMessage(String message)
 {
 
 }
 
 
-void VisualizerPlugin::saveCustomParametersToXml(XmlElement* parentElement)
+void SyncSink::saveCustomParametersToXml(XmlElement* parentElement)
 {
 
 }
 
 
-void VisualizerPlugin::loadCustomParametersFromXml(XmlElement* parentElement)
+void SyncSink::loadCustomParametersFromXml(XmlElement* parentElement)
 {
 
 }

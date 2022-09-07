@@ -26,22 +26,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <VisualizerWindowHeaders.h>
 
-class VisualizerPlugin;
+class SyncSink;
 
 /**
 * 
 	Draws data in real time
 
 */
-class VisualizerPluginCanvas : public Visualizer
+class SyncSinkCanvas : public Visualizer
 {
 public:
 
 	/** Constructor */
-	VisualizerPluginCanvas(VisualizerPlugin* processor);
+	SyncSinkCanvas(SyncSink* processor);
 
 	/** Destructor */
-	~VisualizerPluginCanvas();
+	~SyncSinkCanvas();
 
 	/** Updates boundaries of sub-components whenever the canvas size changes */
 	void resized() override;
@@ -61,13 +61,13 @@ public:
 private:
 
 	/** Pointer to the processor class */
-	VisualizerPlugin* processor;
+	SyncSink* processor;
 
 	/** Class for plotting data */
 	InteractivePlot plt;
 
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPluginCanvas);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncSinkCanvas);
 };
 
 

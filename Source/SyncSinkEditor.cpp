@@ -22,13 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#include "VisualizerPluginEditor.h"
+#include "SyncSinkEditor.h"
 
-#include "VisualizerPluginCanvas.h"
-#include "VisualizerPlugin.h"
+#include "SyncSinkCanvas.h"
+#include "SyncSink.h"
 
 
-VisualizerPluginEditor::VisualizerPluginEditor(GenericProcessor* p)
+SyncSinkEditor::SyncSinkEditor(GenericProcessor* p)
     : VisualizerEditor(p, "Visualizer", 200)
 {
 
@@ -36,7 +36,7 @@ VisualizerPluginEditor::VisualizerPluginEditor(GenericProcessor* p)
 
 }
 
-Visualizer* VisualizerPluginEditor::createNewCanvas()
+Visualizer* SyncSinkEditor::createNewCanvas()
 {
-    return new VisualizerPluginCanvas((VisualizerPlugin*) getProcessor());;
+    return new SyncSinkCanvas((SyncSink*) getProcessor());;
 }

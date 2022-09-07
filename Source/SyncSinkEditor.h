@@ -22,26 +22,26 @@
 */
 
 //This prevents include loops. We recommend changing the macro to a name suitable for your plugin
-#ifndef VISUALIZERPLUGINEDITOR_H_DEFINED
-#define VISUALIZERPLUGINEDITOR_H_DEFINED
+#ifndef SYNCSINKEDITOR_H_DEFINED
+#define SYNCSINKEDITOR_H_DEFINED
 
 #include <VisualizerEditorHeaders.h>
 
 /** 
-	The editor for the VisualizerPlugin
+	The editor for the SyncSink
 
 	Includes buttons for opening the canvas in a tab or window
 */
 
-class VisualizerPluginEditor : public VisualizerEditor
+class SyncSinkEditor : public VisualizerEditor
 {
 public:
 
 	/** Constructor */
-	VisualizerPluginEditor(GenericProcessor* parentNode);
+	SyncSinkEditor(GenericProcessor* parentNode);
 
 	/** Destructor */
-	~VisualizerPluginEditor() { }
+	~SyncSinkEditor() { }
 
 	/** Creates the canvas */
 	Visualizer* createNewCanvas();
@@ -49,8 +49,8 @@ public:
 private:
 
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPluginEditor);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncSinkEditor);
 };
 
 
-#endif // VISUALIZERPLUGINEDITOR_H_DEFINED
+#endif // SyncSinkEDITOR_H_DEFINED

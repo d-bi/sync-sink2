@@ -22,8 +22,8 @@
 */
 
 //This prevents include loops. We recommend changing the macro to a name suitable for your plugin
-#ifndef VISUALIZERPLUGIN_H_DEFINED
-#define VISUALIZERPLUGIN_H_DEFINED
+#ifndef SyncSink_H_DEFINED
+#define SyncSink_H_DEFINED
 
 #include <ProcessorHeaders.h>
 
@@ -33,14 +33,14 @@
 	or an extended settings interface.
 */
 
-class VisualizerPlugin : public GenericProcessor
+class SyncSink : public GenericProcessor
 {
 public:
 	/** The class constructor, used to initialize any members.*/
-	VisualizerPlugin();
+	SyncSink();
 
 	/** The class destructor, used to deallocate memory*/
-	~VisualizerPlugin();
+	~SyncSink();
 
 	/** If the processor has a custom editor, this method must be defined to instantiate it. */
 	AudioProcessorEditor* createEditor() override;
@@ -81,8 +81,8 @@ public:
 private:
 
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPlugin);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncSink);
 
 };
 
-#endif // VISUALIZERPLUGIN_H_DEFINED
+#endif // SyncSink_H_DEFINED

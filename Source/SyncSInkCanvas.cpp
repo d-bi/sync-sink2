@@ -21,48 +21,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "VisualizerPluginCanvas.h"
+#include "SyncSinkCanvas.h"
 
-#include "VisualizerPlugin.h"
+#include "SyncSink.h"
 
 
-VisualizerPluginCanvas::VisualizerPluginCanvas(VisualizerPlugin* processor_)
+SyncSinkCanvas::SyncSinkCanvas(SyncSink* processor_)
 	: processor(processor_)
 {
 
 }
 
 
-VisualizerPluginCanvas::~VisualizerPluginCanvas()
+SyncSinkCanvas::~SyncSinkCanvas()
 {
 
 }
 
 
-void VisualizerPluginCanvas::resized()
+void SyncSinkCanvas::resized()
 {
 
 }
 
-void VisualizerPluginCanvas::refreshState()
-{
-
-}
-
-
-void VisualizerPluginCanvas::update()
+void SyncSinkCanvas::refreshState()
 {
 
 }
 
 
-void VisualizerPluginCanvas::refresh()
+void SyncSinkCanvas::update()
 {
 
 }
 
 
-void VisualizerPluginCanvas::paint(Graphics& g)
+void SyncSinkCanvas::refresh()
+{
+
+}
+
+
+void SyncSinkCanvas::paint(Graphics& g)
 {
 
 	g.fillAll(Colours::black);
