@@ -132,7 +132,7 @@ void SyncSink::handleSpike(SpikePtr event)
 	double sampleRate = event->getChannelInfo()->getSampleRate();
 	double sampleTimestamp = (double) sampleNum / (sampleRate / 1000) + startTimestamp;
 	int64 timestamp = (int64)sampleTimestamp;
-	std::cout << event->getSampleNumber() << " " << event->getChannelInfo()->getSampleRate() << " " << timestamp << " " << std::endl;
+	//std::cout << event->getSampleNumber() << " " << event->getChannelInfo()->getSampleRate() << " " << timestamp << " " << std::endl;
 
 	const SpikeChannel* chan = event->getChannelInfo();
 	int64 numChannels = chan->getNumChannels();
