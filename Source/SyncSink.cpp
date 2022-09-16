@@ -146,13 +146,14 @@ void SyncSink::handleSpike(SpikePtr event)
 	double sampleRate = event->getChannelInfo()->getSampleRate();
 	double sampleTimestamp = (double) sampleNum / (sampleRate / 1000) + startTimestamp;
 	int64 timestamp = (int64)sampleTimestamp;
-	//std::cout << event->getSampleNumber() << " " << event->getChannelInfo()->getSampleRate() << " " << timestamp << " " << std::endl;
+	//std::cout << "SyncSink::handleSpike(): sample num " << event->getSampleNumber() << " timestamp " << timestamp << " " << std::endl;
 
 	const SpikeChannel* chan = event->getChannelInfo();
 	int64 numChannels = chan->getNumChannels();
 	int64 numSamples = chan->getTotalSamples();
 	int64 spikeChannelIdx = event->getChannelIndex();
 	int64 sortedID = event->getSortedId();
+	std::cout << "SyncSink::handleSpike(): inTrial" << inTrial << " numConditions " << numConditions << " currentStimClass " << currentStimClass << " currentTrialStartTime " << currentTrialStartTime << std::endl;
 	if (!inTrial || numConditions < 0 || currentStimClass < 0 || currentTrialStartTime < 0)
 	{
 		return; // do not process spike when stimulus is not presented
@@ -185,6 +186,7 @@ void SyncSink::handleSpike(SpikePtr event)
 
 	double offset = double(timestamp - currentTrialStartTime); // milliseconds
 	int bin = floor(offset / ((double)binSize));
+	std::cout << "SyncSink::handleSpike(): sample num " << event->getSampleNumber() << " timestamp " << timestamp << " offset " << offset << " bin " << bin << std::endl;
 	if (!nTrialsByStimClass.contains(currentStimClass))
 	{
 		std::cout << "SyncSink::handleSpike(): unregistered stim class " << currentStimClass << std::endl;
@@ -200,7 +202,7 @@ void SyncSink::handleSpike(SpikePtr event)
 
 void SyncSink::handleBroadcastMessage(String message)
 {
-    std::cout << "SyncSink::handleBroadcastMessage(): received " << message << " " << CoreServices::getSoftwareTimestamp() << std::endl;
+    //std::cout << "SyncSink::handleBroadcastMessage(): received " << message << " " << CoreServices::getSoftwareTimestamp() << std::endl;
 	int64 timestamp = CoreServices::getSoftwareTimestamp();
 	/* Parse Kofiko */
 	// Beginning of trial: add conditions
@@ -234,39 +236,40 @@ void SyncSink::handleBroadcastMessage(String message)
 		{
 			canvas->update();
 		}
-		for (int stimClass : stimClasses)
-		{
-			std::cout << "SyncSink::handleBroadcastMessage(): stimClass = " << stimClass << std::endl;
-		}
+		//for (int stimClass : stimClasses)
+		//{
+		//	std::cout << "SyncSink::handleBroadcastMessage(): stimClass = " << stimClass << std::endl;
+		//}
+		std::cout << "SyncSink::handleBroadcastMessage(): add stimClass " << numConditions << std::endl;
 	}
-	else if (message.startsWith("TrialStart"))
+	else if (message.startsWith("TrialStart")) // Jialiang / Berkeley Kofiko -- Sept. 2022
 	{
 		
 		StringArray tokens;
 		tokens.addTokens(message, true);
 		/* tokens[0] == TrialStart; tokens[1] == IMGID */
-		std::cout << "SyncSink::handleBroadcastMessage(): TrialStart " << tokens[0] << " " << tokens[1] << std::endl;
-		//if (conditionMap.contains(tokens[1]))
-		//{
-		//	currentStimClass = conditionList[conditionMap[tokens[1]]];
-		//	nTrials += 1;
-		//	nTrialsByStimClass.set(currentStimClass, nTrialsByStimClass[currentStimClass] + 1);
-		//}
-		//else
-		//{
-		//	std::cout << "Image ID " << tokens[1] << " not mappable to stimulus class!" << std::endl;
-		//}
-		//std::cout << "TrialStart for image " << tokens[1] << " at " << timestamp << std::endl;
-		//if (thisEditor != nullptr)
-		//{
-		//	thisEditor->updateLegend();
-		//}
+		//std::cout << "SyncSink::handleBroadcastMessage(): TrialStart " << tokens[0] << " " << tokens[1] << std::endl;
+		if (conditionMap.contains(tokens[1]))
+		{
+			currentStimClass = conditionList[conditionMap[tokens[1]]];
+			nTrials += 1;
+			nTrialsByStimClass.set(currentStimClass, nTrialsByStimClass[currentStimClass] + 1);
+		}
+		else
+		{
+			std::cout << "SyncSink::handleBroadcastMessage(): Image ID " << tokens[1] << " not mappable to stimulus class!" << std::endl;
+		}
+		//std::cout << "SyncSink::handleBroadcastMessage(): TrialStart for image " << tokens[1] << " at " << timestamp << std::endl;
+		if (canvas != nullptr)
+		{
+			canvas->updateLegend();
+		}
 	}
-	else if (message.startsWith("TrialType")) // Janis Kofiko
+	else if (message.startsWith("TrialType")) // Janis Kofiko -- deprecated
 	{
 		StringArray tokens;
 		tokens.addTokens(message, true);
-		std::cout << "SyncSink::handleBroadcastMessage(): TrialType " << tokens[0] << " " << tokens[1] << std::endl;
+		//std::cout << "SyncSink::handleBroadcastMessage(): TrialType " << tokens[0] << " " << tokens[1] << std::endl;
 		/* tokens[0] == TrialAlign; tokens[1] == IMGID */
 		if (conditionMap.contains(tokens[1]))
 		{
@@ -278,7 +281,7 @@ void SyncSink::handleBroadcastMessage(String message)
 		{
 			std::cout << "SyncSink::handleBroadcastMessage(): Image ID " << tokens[1] << " not mappable to stimulus class!" << std::endl;
 		}
-		std::cout << "SyncSink::handleBroadcastMessage(): TrialType for image " << tokens[1] << " at " << timestamp << std::endl;
+		//std::cout << "SyncSink::handleBroadcastMessage(): TrialType for image " << tokens[1] << " at " << timestamp << std::endl;
 		if (canvas != nullptr)
 		{
 			canvas->updateLegend();
@@ -292,10 +295,11 @@ void SyncSink::handleBroadcastMessage(String message)
 	}
 	else if (message.startsWith("TrialEnd"))
 	{
-		std::cout << "SyncSink::handleBroadcastMessage(): TrialEnd at " << timestamp << std::endl;
+		//std::cout << "SyncSink::handleBroadcastMessage(): TrialEnd at " << timestamp << std::endl;
 		if (canvas != nullptr) {
 			//std::cout << "send update to canvas" << std::endl;
 			canvas->updatePlots();
+			canvas->repaint();
 		}
 		//if (!nTrialsByStimClass.contains(currentStimClass))
 		//{
@@ -446,6 +450,12 @@ void SyncSink::rebin(int n_bins, int bin_size)
 {
 	nBins = n_bins;
 	binSize = bin_size;
+	if (canvas != nullptr)
+	{
+		canvas->updatePlots();
+		canvas->update();
+		canvas->updateLegend();
+	}
 }
 
 String SyncSink::getStimClassLabel(int stim_class)

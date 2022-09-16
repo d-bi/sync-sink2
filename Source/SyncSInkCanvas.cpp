@@ -85,7 +85,8 @@ void SyncSinkCanvas::paint(Graphics& g)
 		g.drawText(String(i) + String(": ") + processor->getStimClassLabel(i),
 			getWidth() * 9 / 10 + 30, i * 20, 100, 20, juce::Justification::centred, true);
 	}
-
+	g.drawText(String("Trial: ") + String(processor->getNTrial()),
+		getWidth() * 9 / 10, getHeight() * 4 / 5, 100, 20, juce::Justification::centred, true);
 }
 
 void SyncSinkCanvas::updatePlots()
