@@ -49,10 +49,11 @@ SyncSink::SyncSink()
 	socket = zmq_socket(context, ZMQ_SUB);
 	dataport = 5557;
 	zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
-	const int RECV_TIMEOUT = 100;
+	const int RECV_TIMEOUT = 10;
 	zmq_setsockopt(socket, ZMQ_RCVTIMEO, &RECV_TIMEOUT, sizeof(RECV_TIMEOUT));
 	int rc = zmq_connect(socket, "tcp://localhost:5557");
 	std::cout << "SyncSink(): syncsink listening on port 5557 " << rc << " " << zmq_errno() << std::endl;
+	startThread();
 }
 
 
@@ -342,16 +343,16 @@ void SyncSink::loadCustomParametersFromXml(XmlElement* parentElement)
 
 void SyncSink::run()
 {
-	//HeapBlock<char> buf(65536);
-	//while (!threadShouldExit()) {
-	//	int res = zmq_recv(socket, buf, 2048, 0);
-	//	if (res == -1) {
-	//		std::cout << "SyncSink::run(): failed to receive message" << std::endl;
-	//		continue;
-	//	}
-	//	String msg = String::fromUTF8(buf, res);
-	//	handleBroadcastMessage(msg);
-	//}
+	HeapBlock<char> buf(65536);
+	while (!threadShouldExit()) {
+		int res = zmq_recv(socket, buf, 2048, 0);
+		if (res == -1) {
+			//std::cout << "SyncSink::run(): failed to receive message" << std::endl;
+			continue;
+		}
+		String msg = String::fromUTF8(buf, res);
+		handleBroadcastMessage(msg);
+	}
 }
 
 bool SyncSink::startAcquisition()
