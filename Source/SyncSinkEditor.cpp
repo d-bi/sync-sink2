@@ -27,11 +27,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SyncSinkCanvas.h"
 #include "SyncSink.h"
 
+#include <stdio.h>
+
 
 SyncSinkEditor::SyncSinkEditor(GenericProcessor* p)
-    : VisualizerEditor(p, "Visualizer", 200)
+    : VisualizerEditor(p, "Visualizer", 200), syncSinkCanvas(nullptr)
 {
-
+    desiredWidth = 250;
+    addTextBoxParameterEditor("plot", 20, 20);
+    //addTextBoxParameterEditor("cluster", 120, 20);
+    addTextBoxParameterEditor("nbins", 20, 60);
+    addTextBoxParameterEditor("binsize", 120, 60);
     //addSelectedChannelsParameterEditor("Channels", 20, 105);
 
 }
@@ -39,4 +45,8 @@ SyncSinkEditor::SyncSinkEditor(GenericProcessor* p)
 Visualizer* SyncSinkEditor::createNewCanvas()
 {
     return new SyncSinkCanvas((SyncSink*) getProcessor());;
+}
+
+void SyncSinkEditor::updateSettings()
+{
 }

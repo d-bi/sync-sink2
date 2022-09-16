@@ -22,8 +22,8 @@
 */
 
 //This prevents include loops. We recommend changing the macro to a name suitable for your plugin
-#ifndef SyncSink_H_DEFINED
-#define SyncSink_H_DEFINED
+#ifndef SYNCSINK_H_DEFINED
+#define SYNCSINK_H_DEFINED
 
 #include <ProcessorHeaders.h>
 
@@ -32,6 +32,9 @@
 	A plugin that includes a canvas for displaying incoming data
 	or an extended settings interface.
 */
+
+class SyncSinkCanvas;
+class SyncSinkEditor;
 
 class SyncSink : public GenericProcessor
 {
@@ -44,6 +47,8 @@ public:
 
 	/** If the processor has a custom editor, this method must be defined to instantiate it. */
 	AudioProcessorEditor* createEditor() override;
+
+	void parameterValueChanged(Parameter* param) override;
 
 	/** Called every time the settings of an upstream plugin are changed.
 		Allows the processor to handle variations in the channel configuration or any other parameter
@@ -78,10 +83,50 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement* parentElement) override;
 
+	bool startAcquisition() override;
+
+	//SyncSinkCanvas* syncSinkCanvas = nullptr;
+	std::vector<double> getHistogram(int channel_idx, int sorted_id, int stim_class);
+	int getNTrial();
+	void setCanvas(SyncSinkCanvas* c);
+	void setEditor(SyncSinkEditor* e);
+	void addPSTHPlot(int channel_idx, int sorted_id, std::vector<int> stimClasses);
+	void resetTensor();
+	void rebin(int n_bins, int bin_size);
+	String getStimClassLabel(int stim_class);
+	int getNBins();
+	int getBinSize();
+	std::vector<int> getStimClasses();
+	void clearVars();
+	int numConditions = -1;
+	SyncSinkCanvas* canvas = nullptr;
+	SyncSinkEditor* thisEditor = nullptr;
+
+
 private:
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncSink);
+
+	HashMap<String, String> conditionMap; // hashmap for image ids
+	HashMap<String, int> conditionList; // hashmap for condition indexing
+	HashMap<int, String> conditionListInverse; // hashmap for index to condition string
+	HashMap<int, int> nTrialsByStimClass; // hashmap storing num trials for each condition
+	std::vector<int> stimClasses;
+	int currentStimClass = -1;
+	int64 currentTrialStartTime = -1;
+	bool inTrial = false;
+	std::vector<std::vector<std::vector<std::vector<double>>>> spikeTensor; // n_channels * n_units * n_stim_classes * n_bins tensor for spike counts
+
+	int nBins = 50; // default num bins
+	int binSize = 10; // default bin sizes
+	int nTrials = 0;
+	//void* context;
+	//void* socket;
+	//int dataport;
+
+	int64 startTimestamp = 0; // software timestamp at start of acquisition
+	int sampleRate = 0; // sample rate
 
 };
 

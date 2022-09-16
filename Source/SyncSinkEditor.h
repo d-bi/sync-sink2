@@ -26,12 +26,15 @@
 #define SYNCSINKEDITOR_H_DEFINED
 
 #include <VisualizerEditorHeaders.h>
+#include "SyncSink.h"
 
 /** 
 	The editor for the SyncSink
 
 	Includes buttons for opening the canvas in a tab or window
 */
+
+class SyncSinkCanvas;
 
 class SyncSinkEditor : public VisualizerEditor
 {
@@ -44,12 +47,20 @@ public:
 	~SyncSinkEditor() { }
 
 	/** Creates the canvas */
-	Visualizer* createNewCanvas();
+	Visualizer* createNewCanvas() override;
+	void updateSettings() override;
+	//void buttonEvent(Button* button) override;
+	//void updateLegend();
 
+	SyncSinkCanvas* syncSinkCanvas;
 private:
 
 	/** Generates an assertion if this class leaks */
+	//SyncSink* processor;
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncSinkEditor);
+	//ScopedPointer<UtilityButton> addPlotButton, resetTensorButton, rebinButton, resetButton;
+	//ScopedPointer<Label> addPlotParamsLabel, stimClassLegendLabel, binParamsLabel;
+	//Font font;
 };
 
 
