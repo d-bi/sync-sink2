@@ -46,12 +46,13 @@ SyncSink::SyncSink()
         "Size of a bin in ms",
         "10");
 	context = zmq_ctx_new();
-	socket = zmq_socket(context, ZMQ_SUB);
+	//socket = zmq_socket(context, ZMQ_SUB);
+	socket = zmq_socket(context, ZMQ_REP);
 	dataport = 5557;
-	zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
+	//zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
 	const int RECV_TIMEOUT = 10;
 	zmq_setsockopt(socket, ZMQ_RCVTIMEO, &RECV_TIMEOUT, sizeof(RECV_TIMEOUT));
-	int rc = zmq_connect(socket, "tcp://localhost:5557");
+	int rc = zmq_bind(socket, "tcp://*:5557");
 	std::cout << "SyncSink(): syncsink listening on port 5557 " << rc << " " << zmq_errno() << std::endl;
 	startThread();
 }
@@ -352,6 +353,7 @@ void SyncSink::run()
 		}
 		String msg = String::fromUTF8(buf, res);
 		handleBroadcastMessage(msg);
+		zmq_send(socket, "", 0, 0);
 	}
 }
 
