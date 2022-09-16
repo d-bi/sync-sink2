@@ -49,9 +49,8 @@ SyncSinkCanvas::~SyncSinkCanvas()
 
 void SyncSinkCanvas::resized()
 {
-	repaint();
-	display->resized();
-	display->repaint();
+	viewport->setBounds(0, 0, getWidth(), getHeight());
+	display->setBounds(0, 0, getWidth() * 9 / 10, getHeight());
 }
 
 void SyncSinkCanvas::refreshState()
