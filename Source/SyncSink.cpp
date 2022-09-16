@@ -24,10 +24,10 @@
 #include "SyncSink.h"
 #include "SyncSinkEditor.h"
 #include "SyncSinkCanvas.h"
-
+#include <zmq.h>
 
 SyncSink::SyncSink() 
-    : GenericProcessor("SyncSink2")
+    : GenericProcessor("SyncSink2"), Thread("SyncSinkNetworkThread")
 {
     addStringParameter(Parameter::GLOBAL_SCOPE,
         "plot",
@@ -45,12 +45,24 @@ SyncSink::SyncSink()
         "binsize",
         "Size of a bin in ms",
         "10");
+	context = zmq_ctx_new();
+	socket = zmq_socket(context, ZMQ_SUB);
+	dataport = 5557;
+	zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
+	const int RECV_TIMEOUT = 100;
+	zmq_setsockopt(socket, ZMQ_RCVTIMEO, &RECV_TIMEOUT, sizeof(RECV_TIMEOUT));
+	int rc = zmq_connect(socket, "tcp://localhost:5557");
+	std::cout << "SyncSink(): syncsink listening on port 5557 " << rc << " " << zmq_errno() << std::endl;
 }
 
 
 SyncSink::~SyncSink()
 {
-
+	if (!stopThread(1000)) {
+		std::cerr << "Network thread timeout." << std::endl;
+	}
+	zmq_close(socket);
+	zmq_ctx_destroy(context);
 }
 
 
@@ -70,7 +82,7 @@ void SyncSink::parameterValueChanged(Parameter* param)
 		{
 			if (tokens[2].getIntValue() >= numConditions)
 			{
-				std::cout << "stim class specified out of bounds" << std::endl;
+				std::cout << "SyncSink::parameterValueChanged(): stim class specified out of bounds" << std::endl;
 				return;
 			}
 			addPSTHPlot(
@@ -83,7 +95,7 @@ void SyncSink::parameterValueChanged(Parameter* param)
 		{
 			if (numConditions < 0)
 			{
-				std::cout << "empty stim class list" << std::endl;
+				std::cout << "SyncSink::parameterValueChanged(): empty stim class list" << std::endl;
 				return;
 			}
 			addPSTHPlot(
@@ -94,7 +106,7 @@ void SyncSink::parameterValueChanged(Parameter* param)
 		}
 		else
 		{
-			std::cout << "unable to parse plot param string " << param->getValueAsString() << std::endl;
+			std::cout << "SyncSink::parameterValueChanged(): unable to parse plot param string " << param->getValueAsString() << std::endl;
 		}
     }
     else if (param->getName().equalsIgnoreCase("cluster")) {
@@ -173,7 +185,7 @@ void SyncSink::handleSpike(SpikePtr event)
 	int bin = floor(offset / ((double)binSize));
 	if (!nTrialsByStimClass.contains(currentStimClass))
 	{
-		std::cout << "unregistered stim class " << currentStimClass << std::endl;
+		std::cout << "SyncSink::handleSpike(): unregistered stim class " << currentStimClass << std::endl;
 		return;
 	}
 	if (bin < nBins)
@@ -186,7 +198,7 @@ void SyncSink::handleSpike(SpikePtr event)
 
 void SyncSink::handleBroadcastMessage(String message)
 {
-    std::cout << "received " << message << " " << CoreServices::getSoftwareTimestamp() << std::endl;
+    std::cout << "SyncSink::handleBroadcastMessage(): received " << message << " " << CoreServices::getSoftwareTimestamp() << std::endl;
 	int64 timestamp = CoreServices::getSoftwareTimestamp();
 	/* Parse Kofiko */
 	// Beginning of trial: add conditions
@@ -222,9 +234,8 @@ void SyncSink::handleBroadcastMessage(String message)
 		}
 		for (int stimClass : stimClasses)
 		{
-			std::cout << stimClass << std::endl;
+			std::cout << "SyncSink::handleBroadcastMessage(): stimClass = " << stimClass << std::endl;
 		}
-		std::cout << message << std::endl;
 	}
 	else if (message.startsWith("TrialStart"))
 	{
@@ -232,7 +243,7 @@ void SyncSink::handleBroadcastMessage(String message)
 		StringArray tokens;
 		tokens.addTokens(message, true);
 		/* tokens[0] == TrialStart; tokens[1] == IMGID */
-		std::cout << "TrialStart " << tokens[0] << " " << tokens[1] << std::endl;
+		std::cout << "SyncSink::handleBroadcastMessage(): TrialStart " << tokens[0] << " " << tokens[1] << std::endl;
 		//if (conditionMap.contains(tokens[1]))
 		//{
 		//	currentStimClass = conditionList[conditionMap[tokens[1]]];
@@ -253,7 +264,7 @@ void SyncSink::handleBroadcastMessage(String message)
 	{
 		StringArray tokens;
 		tokens.addTokens(message, true);
-		std::cout << "TrialType " << tokens[0] << " " << tokens[1] << std::endl;
+		std::cout << "SyncSink::handleBroadcastMessage(): TrialType " << tokens[0] << " " << tokens[1] << std::endl;
 		/* tokens[0] == TrialAlign; tokens[1] == IMGID */
 		if (conditionMap.contains(tokens[1]))
 		{
@@ -263,9 +274,9 @@ void SyncSink::handleBroadcastMessage(String message)
 		}
 		else
 		{
-			std::cout << "Image ID " << tokens[1] << " not mappable to stimulus class!" << std::endl;
+			std::cout << "SyncSink::handleBroadcastMessage(): Image ID " << tokens[1] << " not mappable to stimulus class!" << std::endl;
 		}
-		std::cout << "TrialType for image " << tokens[1] << " at " << timestamp << std::endl;
+		std::cout << "SyncSink::handleBroadcastMessage(): TrialType for image " << tokens[1] << " at " << timestamp << std::endl;
 		if (canvas != nullptr)
 		{
 			canvas->updateLegend();
@@ -273,13 +284,13 @@ void SyncSink::handleBroadcastMessage(String message)
 	}
 	else if (message.startsWith("TrialAlign"))
 	{
-		std::cout << "TrialAlign at " << timestamp << std::endl;
+		std::cout << "SyncSink::handleBroadcastMessage(): TrialAlign at " << timestamp << std::endl;
 		currentTrialStartTime = timestamp;
 		inTrial = true;
 	}
 	else if (message.startsWith("TrialEnd"))
 	{
-		std::cout << "TrialEnd at " << timestamp << std::endl;
+		std::cout << "SyncSink::handleBroadcastMessage(): TrialEnd at " << timestamp << std::endl;
 		if (canvas != nullptr) {
 			//std::cout << "send update to canvas" << std::endl;
 			canvas->updatePlots();
@@ -329,10 +340,24 @@ void SyncSink::loadCustomParametersFromXml(XmlElement* parentElement)
 
 }
 
+void SyncSink::run()
+{
+	//HeapBlock<char> buf(65536);
+	//while (!threadShouldExit()) {
+	//	int res = zmq_recv(socket, buf, 2048, 0);
+	//	if (res == -1) {
+	//		std::cout << "SyncSink::run(): failed to receive message" << std::endl;
+	//		continue;
+	//	}
+	//	String msg = String::fromUTF8(buf, res);
+	//	handleBroadcastMessage(msg);
+	//}
+}
+
 bool SyncSink::startAcquisition()
 {
 	startTimestamp = CoreServices::getSoftwareTimestamp();
-	std::cout << startTimestamp << std::endl;
+	std::cout << "SyncSink::startAcquisition():" << startTimestamp << std::endl;
 	return true;
 }
 
@@ -369,7 +394,7 @@ void SyncSink::setEditor(SyncSinkEditor* e)
 void SyncSink::addPSTHPlot(int channel_idx, int sorted_id, std::vector<int> stimClasses)
 {
 	if (canvas != nullptr) {
-		std::cout << "add plot to canvas: " << channel_idx << sorted_id;
+		std::cout << "SyncSink::addPSTHPlot(): add plot to canvas: " << channel_idx << sorted_id;
 		for (int stim_class : stimClasses)
 		{
 			std::cout << stim_class << "(" << conditionListInverse[stim_class] << ") ";
@@ -457,5 +482,5 @@ void SyncSink::clearVars()
 	currentStimClass = -1;
 	currentTrialStartTime = -1;
 	inTrial = false;
-	std::cout << "SyncSink variables cleared" << std::endl;
+	std::cout << "SyncSink::clearVars(): SyncSink variables cleared" << std::endl;
 }

@@ -148,7 +148,7 @@ void SyncSinkDisplay::updatePlots()
 
 void SyncSinkDisplay::addPSTHPlot(int channel_idx, int sorted_id, std::vector<int> stimClasses)
 {
-	std::cout << "add PSTH plot with params"
+	std::cout << "SyncSinkDisplay::addPSTHPlot(): add PSTH plot with params"
 		<< " channel_idx=" << channel_idx
 		<< "; sorted_id=" << sorted_id
 		<< "; stim_classes=";

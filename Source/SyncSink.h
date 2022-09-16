@@ -36,7 +36,7 @@
 class SyncSinkCanvas;
 class SyncSinkEditor;
 
-class SyncSink : public GenericProcessor
+class SyncSink : public GenericProcessor, public Thread
 {
 public:
 	/** The class constructor, used to initialize any members.*/
@@ -83,6 +83,8 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement* parentElement) override;
 
+	void run() override;
+
 	bool startAcquisition() override;
 
 	//SyncSinkCanvas* syncSinkCanvas = nullptr;
@@ -121,9 +123,9 @@ private:
 	int nBins = 50; // default num bins
 	int binSize = 10; // default bin sizes
 	int nTrials = 0;
-	//void* context;
-	//void* socket;
-	//int dataport;
+	void* context;
+	void* socket;
+	int dataport;
 
 	int64 startTimestamp = 0; // software timestamp at start of acquisition
 	int sampleRate = 0; // sample rate

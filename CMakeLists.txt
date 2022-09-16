@@ -92,6 +92,11 @@ foreach( src_file IN ITEMS ${SRC_FILES})
 	source_group("${group_name}" FILES "${src_file}")
 endforeach()
 
+#copy dlls when installing
+if (MSVC)
+	install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/windows/bin/${CMAKE_LIBRARY_ARCHITECTURE}/ DESTINATION ${GUI_BIN_DIR}/shared CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
+endif()
+
 #additional libraries, if needed
 find_library(ZMQ_LIBRARIES NAMES libzmq-mt-4_3_4)
 find_path(ZMQ_INCLUDE_DIRS zmq.h)
