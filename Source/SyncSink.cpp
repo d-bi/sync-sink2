@@ -153,7 +153,7 @@ void SyncSink::handleSpike(SpikePtr event)
 	int64 numSamples = chan->getTotalSamples();
 	int64 spikeChannelIdx = event->getChannelIndex();
 	int64 sortedID = event->getSortedId();
-	std::cout << "SyncSink::handleSpike(): inTrial" << inTrial << " numConditions " << numConditions << " currentStimClass " << currentStimClass << " currentTrialStartTime " << currentTrialStartTime << std::endl;
+	//std::cout << "SyncSink::handleSpike(): inTrial" << inTrial << " numConditions " << numConditions << " currentStimClass " << currentStimClass << " currentTrialStartTime " << currentTrialStartTime << std::endl;
 	if (!inTrial || numConditions < 0 || currentStimClass < 0 || currentTrialStartTime < 0)
 	{
 		return; // do not process spike when stimulus is not presented
@@ -186,7 +186,7 @@ void SyncSink::handleSpike(SpikePtr event)
 
 	double offset = double(timestamp - currentTrialStartTime); // milliseconds
 	int bin = floor(offset / ((double)binSize));
-	std::cout << "SyncSink::handleSpike(): sample num " << event->getSampleNumber() << " timestamp " << timestamp << " offset " << offset << " bin " << bin << std::endl;
+	//std::cout << "SyncSink::handleSpike(): sample num " << event->getSampleNumber() << " timestamp " << timestamp << " offset " << offset << " bin " << bin << std::endl;
 	if (!nTrialsByStimClass.contains(currentStimClass))
 	{
 		std::cout << "SyncSink::handleSpike(): unregistered stim class " << currentStimClass << std::endl;
@@ -289,7 +289,7 @@ void SyncSink::handleBroadcastMessage(String message)
 	}
 	else if (message.startsWith("TrialAlign"))
 	{
-		std::cout << "SyncSink::handleBroadcastMessage(): TrialAlign at " << timestamp << std::endl;
+		//std::cout << "SyncSink::handleBroadcastMessage(): TrialAlign at " << timestamp << std::endl;
 		currentTrialStartTime = timestamp;
 		inTrial = true;
 	}
@@ -310,24 +310,18 @@ void SyncSink::handleBroadcastMessage(String message)
 		{
 			for (std::vector<std::vector<double>> unitTensor : channelTensor)
 			{
-				//std::vector<double> conditionTensor = unitTensor[currentStimClass];
-				int condition_idx = 0;
-				for (int c = 0; c < unitTensor.size(); c++)//std::vector<double> conditionTensor : unitTensor)
+
+				std::vector<double> conditionTensor = unitTensor[currentStimClass];
+				for (double val : conditionTensor)
 				{
-					std::vector<double> conditionTensor = unitTensor[c];
-					for (double val : conditionTensor)
-					{
-						val *= double(nTrials) / double(nTrialsByStimClass[c] + 1);
-						//							std::cout << val << " ";
-					}
-					condition_idx += 1;
-					//						std::cout << std::endl;
+					val *= double(nTrialsByStimClass[currentStimClass]) / double(nTrialsByStimClass[currentStimClass] + 1);
+					//std::cout << val << " ";
 				}
-				//					std::cout << std::endl;
+				//std::cout << std::endl;
 			}
-			//				std::cout << std::endl;
+			//std::cout << std::endl;
 		}
-		//			std::cout << std::endl;
+		//std::cout << std::endl;
 		currentTrialStartTime = -1;
 		currentStimClass = -1;
 		inTrial = false;
@@ -348,7 +342,7 @@ void SyncSink::loadCustomParametersFromXml(XmlElement* parentElement)
 
 void SyncSink::run()
 {
-	HeapBlock<char> buf(65536);
+	HeapBlock<char> buf(2048);
 	while (!threadShouldExit()) {
 		int res = zmq_recv(socket, buf, 2048, 0);
 		if (res == -1) {
